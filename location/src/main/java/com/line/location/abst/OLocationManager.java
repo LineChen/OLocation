@@ -61,7 +61,7 @@ public class OLocationManager implements OLocationManagerBase {
         try {
             oHandler.sendEmptyMessage(OHandler.START_LOCATION);
         } catch (Throwable e) {
-            Log.e(TAG, (e == null ? "" : e.getMessage()));
+            Log.e(TAG, "startLocation:" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -87,7 +87,7 @@ public class OLocationManager implements OLocationManagerBase {
                 return decodeLocation(lastGPSLocation);
             }
         } catch (Throwable e) {
-            Log.e(TAG, "getLastKnownLocation");
+            Log.e(TAG, "getLastKnownLocation:" + (e == null ? "" : e.getMessage()));
         }
         return null;
     }
@@ -97,7 +97,7 @@ public class OLocationManager implements OLocationManagerBase {
         try {
             this.oLocationListener = oLocationListener;
         } catch (Throwable e) {
-            Log.e(TAG, "setLocationListener");
+            Log.e(TAG, "setLocationListener:" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -109,7 +109,7 @@ public class OLocationManager implements OLocationManagerBase {
                 sdkLocationManager.removeUpdates(sdkLocationListener);
             }
         } catch (Throwable e) {
-            Log.e(TAG, "unRegisterLocationListener");
+            Log.e(TAG, "unRegisterLocationListener:" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -141,10 +141,10 @@ public class OLocationManager implements OLocationManagerBase {
                     return fromLocation.get(0);
                 }
             } else {
-                oLocationListener.onError(-1, "Geocoder is not present");
+                oLocationListener.onError(OConstant.ERROR_NO_GEOCODER, "Geocoder is not present");
             }
         } catch (Throwable e) {
-            Log.e(TAG, "");
+            Log.e(TAG, "decodeLocation:" + (e == null ? "" : e.getMessage()));
         }
         return null;
     }
@@ -173,7 +173,7 @@ public class OLocationManager implements OLocationManagerBase {
         @Override
         public void onProviderDisabled(String provider) {
             if (oLocationListener != null) {
-                oLocationListener.onError(-1, "provider is disabled");
+                oLocationListener.onError(OConstant.ERROR_PROVIDER_DISABLE, "provider is disabled");
             }
         }
     };
@@ -181,16 +181,14 @@ public class OLocationManager implements OLocationManagerBase {
 
     private static class OHandler extends android.os.Handler {
 
-        public OHandler() {
-        }
-
-        public OHandler(@NonNull Looper looper) {
+        public OHandler(@NonNull Looper looper, OLocationManager locationManager) {
             super(looper);
+            locationManagerWeakReference = new WeakReference<>(locationManager);
         }
 
         final static int START_LOCATION = 1000;
         final static int STOP_LOCATION = 1001;
-        final static int LOCATION_TIMEOUT = 1009;
+        final static int LOCATION_TIMEOUT = 1002;
         private WeakReference<OLocationManager> locationManagerWeakReference;
 
         public OHandler(OLocationManager locationManager) {
@@ -243,11 +241,11 @@ public class OLocationManager implements OLocationManagerBase {
                         removeMessages(START_LOCATION);
                         break;
                     case LOCATION_TIMEOUT:
-                        oLocationManager.oLocationListener.onError(-1, "location timeout");
+                        oLocationManager.oLocationListener.onError(OConstant.ERROR_TIMEOUT, "location timeout");
                         break;
                 }
             } catch (Throwable e) {
-                Log.e(TAG, "handleMessage" + e.getMessage());
+                Log.e(TAG, "handleMessage:" + (e == null ? "" : e.getMessage()));
             }
         }
 
