@@ -39,12 +39,14 @@ public class OLocationManager implements OLocationManagerBase {
     private OHandler oHandler;
 
     public OLocationManager(Context context) {
-        if (context == null) {
-            throw new IllegalArgumentException("Context参数不能为null");
+        this.context = context;
+        Object systemService = context.getSystemService(Context.LOCATION_SERVICE);
+        if ((systemService instanceof LocationManager)) {
+            this.sdkLocationManager = (LocationManager) systemService;
         } else {
-            this.context = context;
-            this.oHandler = new OHandler(this);
+            Log.e(TAG, "sdkLocationManager init error.");
         }
+        this.oHandler = new OHandler(this);
     }
 
     /*******************open api***********************/
@@ -68,7 +70,7 @@ public class OLocationManager implements OLocationManagerBase {
         try {
             oHandler.sendEmptyMessage(OHandler.STOP_LOCATION);
         } catch (Throwable e) {
-            Log.e(TAG, e == null ? "" : e.getMessage());
+            Log.e(TAG, "stopLocation" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -77,9 +79,14 @@ public class OLocationManager implements OLocationManagerBase {
     public @Nullable
     Address getLastKnownLocation() {
         try {
-            Location lastKnownLocation = sdkLocationManager.getLastKnownLocation(null);
-            return decodeLocation(lastKnownLocation);
-        } catch (Exception e) {
+            Location lastGPSLocation = sdkLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (lastGPSLocation == null) {
+                Location lastNetWorkLocation = sdkLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                return decodeLocation(lastNetWorkLocation);
+            } else {
+                return decodeLocation(lastGPSLocation);
+            }
+        } catch (Throwable e) {
             Log.e(TAG, "getLastKnownLocation");
         }
         return null;
@@ -89,7 +96,7 @@ public class OLocationManager implements OLocationManagerBase {
     public void setLocationListener(OLocationListener oLocationListener) {
         try {
             this.oLocationListener = oLocationListener;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Log.e(TAG, "setLocationListener");
         }
     }
@@ -101,7 +108,7 @@ public class OLocationManager implements OLocationManagerBase {
             if (sdkLocationManager != null) {
                 sdkLocationManager.removeUpdates(sdkLocationListener);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Log.e(TAG, "unRegisterLocationListener");
         }
     }
@@ -109,9 +116,7 @@ public class OLocationManager implements OLocationManagerBase {
     @Override
     public void onDestroy() {
         stopLocation();
-        if (sdkLocationManager != null) {
-            sdkLocationManager = null;
-        }
+        oHandler.removeMessages(OHandler.LOCATION_TIMEOUT);
         if (oLocationOption != null) {
             oLocationOption = null;
         }
@@ -148,6 +153,7 @@ public class OLocationManager implements OLocationManagerBase {
     private LocationListener sdkLocationListener = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            oHandler.removeMessages(OHandler.LOCATION_TIMEOUT);
             Address address = decodeLocation(location);
             if (oLocationListener != null) {
                 oLocationListener.onLocationChanged(address);
