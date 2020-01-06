@@ -23,7 +23,7 @@ public class OLocationClient {
                 oLocationManagerBase = new OLocationManager(context);
             }
         } catch (Throwable e) {
-            Log.e(TAG, "");
+            Log.e(TAG, "OLocationClient:" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -37,7 +37,7 @@ public class OLocationClient {
                 }
             }
         } catch (Throwable e) {
-            Log.e(TAG, "");
+            Log.e(TAG, "setLocationOption:" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -47,7 +47,7 @@ public class OLocationClient {
                 oLocationManagerBase.startLocation();
             }
         } catch (Throwable e) {
-            Log.e(TAG, "");
+            Log.e(TAG, "startLocation:" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -57,7 +57,7 @@ public class OLocationClient {
                 oLocationManagerBase.stopLocation();
             }
         } catch (Throwable e) {
-            Log.e(TAG, "");
+            Log.e(TAG, "stopLocation:" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -68,7 +68,7 @@ public class OLocationClient {
                 return oLocationManagerBase.getLastKnownLocation();
             }
         } catch (Throwable e) {
-            Log.e(TAG, "");
+            Log.e(TAG, "getLastKnownLocation:" + (e == null ? "" : e.getMessage()));
         }
         return null;
     }
@@ -84,7 +84,7 @@ public class OLocationClient {
                 }
             }
         } catch (Throwable e) {
-            Log.e(TAG, "");
+            Log.e(TAG, "setLocationListener:" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -94,7 +94,7 @@ public class OLocationClient {
                 oLocationManagerBase.unRegisterLocationListener(oLocationListener);
             }
         } catch (Throwable e) {
-            Log.e(TAG, "");
+            Log.e(TAG, "unRegisterLocationListener:" + (e == null ? "" : e.getMessage()));
         }
     }
 
@@ -104,7 +104,7 @@ public class OLocationClient {
                 oLocationManagerBase.onDestroy();
             }
         } catch (Throwable e) {
-            Log.e(TAG, "");
+            Log.e(TAG, "onDestroy:" + (e == null ? "" : e.getMessage()));
         }
     }
 
